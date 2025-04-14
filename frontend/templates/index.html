@@ -5,7 +5,7 @@
     <div class="row">
         <h1>Audio Classifier</h1>
 
-        <p>Load a sound!</p>
+        <p class="font-weight-bold">Load a sound!</p>
 
         <form id="classification-form">
             <div class="form-group">
@@ -15,61 +15,41 @@
         </form>
 
         
+        <div class="col">
+            <button class="btn btn-primary mt-3" onclick="toggleSelectAll()" width="32px">Invert Selection</button>
+        </div>
+        
         <div class="row">
             
             <div class="col">
                 <table class="table">
                     <thead>
                         <tr>
+                            <th>Nuisance</th>
                             <th>ID</th>
                             <th>Label</th>
                         </tr>
                     </thead>
                     <tbody>
+                        {% for category in categories %}
                         <tr>
-                            <td>0</td>
-                            <td>air_conditioner</td>
+                            <td><input type="checkbox" name="selected_categories" value="{{ loop.index0 }}" {% if loop.index0 in selected_categories %}checked{% endif %} onchange="submitForm()" ></td>
+                            <td>{{ loop.index0 }}</td>
+                            <td>{{ category }}</td>
                         </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>car_horn</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>children_playing</td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td>dog_bark</td>
-                        </tr>
-                        <tr>
-                            <td>4</td>
-                            <td>drilling</td>
-                        </tr>
-                        <tr>
-                            <td>5</td>
-                            <td>engine_idling</td>
-                        </tr>
-                        <tr>
-                            <td>6</td>
-                            <td>gun_shot</td>
-                        </tr>
-                        <tr>
-                            <td>7</td>
-                            <td>jackhammer</td>
-                        </tr>
-                        <tr>
-                            <td>8</td>
-                            <td>siren</td>
-                        </tr>
-                        <tr>
-                            <td>9</td>
-                            <td>street_music</td>
-                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
-            </div>
+                <br>
 
+                <div class="col">
+                    <div class="row">
+                        <label for="threshold-slider">Detection Threshold: <span id="threshold-value">{{ threshold }}</span></label>
+                        <input type="range" id="threshold-slider" name="threshold" min="0" max="100" value="{{ threshold }}" oninput="$('#threshold-value').text(this.value); submitForm()">
+                    </div>
+                </div>
+            </div>
+            
             <div class="col">
                 <img id="spectrogram" src="">
             </div>
@@ -86,7 +66,7 @@
             <thead>
                 <tr>
                     <th>Label</th>
-                    <th>Confidence</th>
+                    <th>Confidence %</th>
                 </tr>
             </thead>
             <tbody>
@@ -95,6 +75,39 @@
     </div>
     
     
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        function submitForm() {
+            const selectedCategories = $('input[name="selected_categories"]:checked').map(function() {
+                return this.value;
+            }).get();
+
+            const threshold = $('#threshold-slider').val();
+
+            $.ajax({
+                type: 'POST',
+                url: '{{ url_for("process_categories") }}',
+                data: JSON.stringify({ selected_categories: selectedCategories, threshold: threshold }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: "json",
+                success: function(data) {
+                    console.log('Categories processed', selectedCategories);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error processing categories:', error);
+                }
+            });
+        }
+
+        function toggleSelectAll() {
+            $('input[name="selected_categories"]').prop('checked', function(i, val) {
+                return !val;
+            });
+            submitForm();
+        }
+
+    </script>
     <script>
         document.getElementById('classification-form').addEventListener('submit', function(event) {
             event.preventDefault();
