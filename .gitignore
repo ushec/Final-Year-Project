@@ -4,3 +4,5 @@ spectrograms
 *.keras
 
 demo
+.venv
+spectrograms_bad
