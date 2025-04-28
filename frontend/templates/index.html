@@ -26,7 +26,6 @@
                     <thead>
                         <tr>
                             <th>Nuisance</th>
-                            <th>ID</th>
                             <th>Label</th>
                         </tr>
                     </thead>
@@ -34,7 +33,6 @@
                         {% for category in categories %}
                         <tr>
                             <td><input type="checkbox" name="selected_categories" value="{{ loop.index0 }}" {% if loop.index0 in selected_categories %}checked{% endif %} onchange="submitForm()" ></td>
-                            <td>{{ loop.index0 }}</td>
                             <td>{{ category }}</td>
                         </tr>
                         {% endfor %}
